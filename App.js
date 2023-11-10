@@ -1,6 +1,6 @@
-import { StatusBar } from 'expo-status-bar';
+import { StatusBar } from 'react-native';
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, TextInput, FlatList } from 'react-native';
+import { StyleSheet, Text, View, TextInput, FlatList, SafeAreaView } from 'react-native';
 import Moneda from './componentes/Moneda';
 
 export default class App extends Component {
@@ -13,33 +13,33 @@ export default class App extends Component {
     }
   }
 
-  cargarDatos = async () => {
+
+  loadCoins = async () => {
     try {
       const res = await fetch(
         "https://api.binance.com/api/v3/ticker/24hr"
       );
-      const datos = await res.json();
-      const datos2 = datos.filter((coin) => coin.symbol.includes("USDT"));
 
-    console.log(datos2);
-
-      console.log(datos);
-      this.setState({ coins: datos2 });
+      const cryptos = await res.json();
+      const filteredCryptos = cryptos.filter((coin) => coin.symbol.includes("USDT"));
+      this.setState({ coins: filteredCryptos });
     } catch (error) {
       console.error("Error", error);
+
     }
   }
 
   componentDidMount() {
-    this.cargarDatos();
+    this.loadCoins();
   }
 
   render() {
+
     const { coins, refreshing, search } = this.state;
 
     return (
-      <View style={styles.container}>
-        <StatusBar backgroundColor="#141414" />
+      <SafeAreaView  style={[styles.container]}>
+        <StatusBar backgroundColor="#141414" barStyle="light-content" />
 
         <View style={styles.header}>
           <Text style={styles.title}>CryptoMarket</Text>
@@ -49,54 +49,61 @@ export default class App extends Component {
             placeholderTextColor="#858585"
             onChangeText={(text) => this.setState({ search: text })}
           />
+
         </View>
+
 
         <FlatList
           style={styles.list}
           data={coins.filter(
             (coin) =>
-              //coin.name.toLowerCase().includes(search.toLowerCase()) ||
               coin.symbol.toLowerCase().includes(search.toLowerCase())
           )}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => <Moneda coin={item} />}
+          renderItem={({ item }) => (
+            <Moneda coin={item}  />
+          )}
           refreshing={refreshing}
           onRefresh={async () => {
             this.setState({ refreshing: true });
-            await this.cargarDatos();
+            await this.loadCoins();
             this.setState({ refreshing: false });
           }}
         />
-      </View>
+    </SafeAreaView >
     );
   }
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#141414",
+    backgroundColor: "#bababa",
     flex: 1,
     alignItems: "center",
   },
   header: {
     flexDirection: "row",
-    width: "90%",
+    width: "85%",
     justifyContent: "space-between",
-    marginBottom: 10,
+    marginBottom: 16,
   },
   title: {
-    fontSize: 20,
-    color: "#fff",
-    marginTop: 10,
+    fontSize: 30,
+    color: "#000000",
+    fontFamily: "Helvetica",
+    marginTop: 16,
   },
   list: {
     width: "90%",
   },
   searchInput: {
-    color: "#fff",
-    borderBottomColor: "#4657CE",
+    marginTop: 16,
+    marginRight: 100,
+    color: "#000000",
+    borderBottomColor: "#000000",
     borderBottomWidth: 1,
-    width: "40%",
-    textAlign: "center",
+    width: "30%",
+    textAlign: "left",
+    fontFamily: "Helvetica",
   },
 });
